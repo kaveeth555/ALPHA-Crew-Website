@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PhotoGrid from "@/components/PhotoGrid";
@@ -27,7 +28,9 @@ export default function Gallery() {
                             A collection of moments frozen in time. Explore the world through our lens.
                         </p>
                     </div>
-                    <PhotoGrid />
+                    <Suspense fallback={<div className="text-white/50 text-center py-20">Loading gallery...</div>}>
+                        <PhotoGrid />
+                    </Suspense>
                 </div>
             </div>
             <Footer />

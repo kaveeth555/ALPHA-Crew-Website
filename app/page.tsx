@@ -6,7 +6,7 @@ import Hero from "@/components/Hero";
 import PhotoGrid from "@/components/PhotoGrid";
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 
 export default function Home() {
   const [videoUrl, setVideoUrl] = useState('/hero-background.mp4');
@@ -56,7 +56,9 @@ export default function Home() {
               View More
             </Link>
           </div>
-          <PhotoGrid limit={12} shuffle={true} compact={true} variant="swipe" />
+          <Suspense fallback={<div className="text-white/30 text-center py-10">Loading photos...</div>}>
+            <PhotoGrid limit={12} shuffle={true} compact={true} variant="swipe" />
+          </Suspense>
         </div>
         <Footer />
       </section>
