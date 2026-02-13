@@ -24,8 +24,8 @@ export default function Contact() {
                         <div className="space-y-8">
                             <h1 className="text-4xl md:text-5xl font-serif font-bold">Get in Touch</h1>
                             <p className="text-muted-foreground">
-                                Interested in working together? Have a question?
-                                Fill out the form or reach out directly via email or social media.
+                                Ready to book with us? Have a question before getting started?
+                                Send us your details through the form below or contact us directly via email or social media
                             </p>
 
                             <div className="space-y-4">
