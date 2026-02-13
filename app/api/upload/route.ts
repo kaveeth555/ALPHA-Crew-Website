@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import path from 'path';
-import { writeFile, mkdir } from 'fs/promises';
-import { existsSync } from 'fs';
+import cloudinary from '@/lib/cloudinary';
 
 export async function POST(req: Request) {
     try {
@@ -12,24 +10,22 @@ export async function POST(req: Request) {
             return NextResponse.json({ success: false, error: 'No file received.' }, { status: 400 });
         }
 
-        const buffer = Buffer.from(await file.arrayBuffer());
-        // Create unique filename
-        const filename = Date.now() + '-' + file.name.replaceAll(' ', '_');
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = new Uint8Array(arrayBuffer);
 
-        // Ensure upload directory exists
-        const uploadDir = path.join(process.cwd(), 'public/uploads');
-        if (!existsSync(uploadDir)) {
-            await mkdir(uploadDir, { recursive: true });
-        }
+        const result: any = await new Promise((resolve, reject) => {
+            cloudinary.uploader.upload_stream({
+                folder: 'alpha-crew',
+            }, (error, result) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(result);
+                }
+            }).end(buffer);
+        });
 
-        // Write file to public/uploads
-        const filePath = path.join(uploadDir, filename);
-        await writeFile(filePath, buffer);
-
-        // Return the relative URL
-        const fileUrl = `/uploads/${filename}`;
-
-        return NextResponse.json({ success: true, url: fileUrl });
+        return NextResponse.json({ success: true, url: result.secure_url });
     } catch (error) {
         console.error('Upload failed:', error);
         return NextResponse.json({ success: false, error: 'Upload failed.' }, { status: 500 });
