@@ -1,17 +1,34 @@
+'use client';
+
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Hero from "@/components/Hero";
 import PhotoGrid from "@/components/PhotoGrid";
 import Link from "next/link";
 import Image from "next/image";
-
-export const dynamic = "force-dynamic";
+import { useState, useEffect } from 'react';
 
 export default function Home() {
+  const [videoUrl, setVideoUrl] = useState('/hero-background.mp4');
+  const [heroTitle, setHeroTitle] = useState('Capture Your Moments With Us');
+
+  useEffect(() => {
+    // Fetch dynamic content
+    fetch('/api/content')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data) {
+          if (data.data.home_video_url) setVideoUrl(data.data.home_video_url);
+          if (data.data.home_title) setHeroTitle(data.data.home_title);
+        }
+      })
+      .catch(err => console.error('Failed to fetch content:', err));
+  }, []);
+
   return (
-    <main className="min-h-screen flex flex-col">
+    <main className="min-h-screen bg-black text-white overflow-x-hidden">
       <Header />
-      <Hero />
+      <Hero videoUrl={videoUrl} title={heroTitle} />
 
       <section className="relative pt-20 pb-0 px-6 overflow-hidden">
         {/* Seamless Background */}

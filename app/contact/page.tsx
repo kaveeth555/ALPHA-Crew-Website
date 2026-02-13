@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { MessageCircle } from "lucide-react";
 
 import Image from "next/image";
 
@@ -40,6 +41,23 @@ export default function Contact() {
                                         <a href="https://www.instagram.com/alphacrew_photography/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Instagram</a>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div className="pt-8 border-t border-white/10">
+                                <h3 className="text-2xl font-serif font-bold mb-3">Join Our Crew</h3>
+                                <p className="text-muted-foreground mb-4">
+                                    Are you a passionate photographer or videographer? We are always looking for new talent to join our team.
+                                    Send us your best work!
+                                </p>
+                                <a
+                                    href="https://wa.me/94719445640?text=Hi,%20I'm%20interested%20in%20joining%20the%20Alpha%20Crew!"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 bg-green-500/10 text-green-400 border border-green-500/20 px-5 py-2.5 rounded-full hover:bg-green-500/20 transition-all group"
+                                >
+                                    <MessageCircle size={20} className="group-hover:scale-110 transition-transform" />
+                                    <span>Apply via WhatsApp</span>
+                                </a>
                             </div>
                         </div>
 

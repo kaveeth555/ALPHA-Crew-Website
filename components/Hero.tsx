@@ -5,7 +5,13 @@ import Image from "next/image";
 import { useRef, useState } from "react";
 import { Play, Pause } from "lucide-react";
 
-export default function Hero() {
+export default function Hero({
+    videoUrl = "/hero-background.mp4",
+    title = "Capture Your Moments With Us"
+}: {
+    videoUrl?: string;
+    title?: string;
+}) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
 
@@ -32,7 +38,7 @@ export default function Hero() {
                     playsInline
                     className="absolute inset-0 w-full h-full object-cover"
                 >
-                    <source src="/hero-background.mp4" type="video/mp4" />
+                    <source src={videoUrl} type="video/mp4" />
                     Your browser does not support the video tag.
                 </video>
             </div>
@@ -40,7 +46,7 @@ export default function Hero() {
             <div className="relative z-20 text-center px-6 max-w-5xl mx-auto space-y-8 pt-20">
                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-8 duration-1000">
                     <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold tracking-tighter text-white drop-shadow-[0_0_80px_rgba(0,0,0,1)] drop-shadow-[0_0_50px_rgba(0,0,0,1)] drop-shadow-[0_0_25px_rgba(0,0,0,1)]">
-                        Capture Your Moments With Us
+                        {title}
                     </h1>
                     <p className="text-lg md:text-xl font-light tracking-[0.2em] text-white/90 uppercase drop-shadow-[0_2px_2px_rgba(0,0,100,0.8)]">
                         Because every moment deserves care

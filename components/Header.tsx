@@ -19,7 +19,7 @@ export default function Header() {
     }, []);
 
     return (
-        <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 flex justify-center ${isScrolled ? 'pt-4' : 'pt-6'}`}>
+        <header className={`fixed top-0 left-0 right-0 z-[105] transition-all duration-300 flex justify-center ${isScrolled ? 'pt-4' : 'pt-6'}`}>
             <div className={`relative pl-4 pr-8 transition-all duration-300 ${isScrolled
                 ? 'h-16 w-[98%] bg-black/80 backdrop-blur-3xl border-white/20'
                 : 'h-20 w-[95%] bg-black/40 backdrop-blur-2xl border-white/10'
