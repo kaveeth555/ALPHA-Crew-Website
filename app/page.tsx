@@ -38,7 +38,6 @@ export default function Home() {
             alt="Background"
             fill
             className="object-cover opacity-40" // Balanced opacity
-            unoptimized
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black via-black/50 to-black" />
         </div>

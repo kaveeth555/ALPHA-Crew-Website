@@ -2,11 +2,21 @@ import dbConnect from '@/lib/db';
 import Photo from '@/models/Photo';
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(req: Request) {
     await dbConnect();
 
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '12'); // Default to 12
+    const skip = (page - 1) * limit;
+
     try {
-        const photos = await Photo.find({}).sort({ order: 1, createdAt: -1 }).lean(); // Sort by Order then Newest
+        const total = await Photo.countDocuments({});
+        const photos = await Photo.find({})
+            .sort({ order: 1, createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .lean();
 
         // Transform _id to string to ensure serializability
         const serializedPhotos = photos.map(photo => ({
@@ -14,7 +24,16 @@ export async function GET() {
             _id: (photo._id as any).toString(),
         }));
 
-        return NextResponse.json({ success: true, data: serializedPhotos });
+        return NextResponse.json({
+            success: true,
+            data: serializedPhotos,
+            pagination: {
+                current: page,
+                pages: Math.ceil(total / limit),
+                total,
+                hasMore: skip + photos.length < total
+            }
+        });
     } catch (error) {
         return NextResponse.json({ success: false, error: error }, { status: 400 });
     }

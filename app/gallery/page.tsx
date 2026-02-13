@@ -15,7 +15,6 @@ export default function Gallery() {
                     alt="Background"
                     fill
                     className="object-cover opacity-50"
-                    unoptimized
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-black via-black/40 to-black" />
             </div>

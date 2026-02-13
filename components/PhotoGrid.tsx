@@ -40,9 +40,11 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid' }:
 
     const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
     const [photos, setPhotos] = useState<Photo[]>([]);
-    const [shuffledPhotos, setShuffledPhotos] = useState<Photo[]>([]);
-    const [mounted, setMounted] = useState(false);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [mounted, setMounted] = useState(false);
 
     // Navigation Refs for safe Swiper integration
     const prevRef = useRef<HTMLButtonElement>(null);
@@ -53,54 +55,66 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid' }:
     // Check against _id (string) or id (number) for compatibility
     const isLightboxOpen = !!photoId;
     const initialSlideIndex = photoId
-        ? shuffledPhotos.findIndex(p => p._id === photoId || p.id === parseInt(photoId))
+        ? photos.findIndex(p => p._id === photoId || p.id === parseInt(photoId))
         : 0;
+
+    const fetchPhotos = async (pageNum: number, isReset: boolean = false) => {
+        try {
+            if (isReset) setLoading(true);
+            else setLoadingMore(true);
+
+            // If limit is provided (e.g. Home page), just fetch that many and no pagination
+            const queryLimit = limit || 12;
+            const res = await fetch(`/api/photos?page=${pageNum}&limit=${queryLimit}`);
+
+            if (!res.ok) {
+                console.error('API Error:', res.status, res.statusText);
+                return;
+            }
+
+            const data = await res.json();
+            if (data.success) {
+                const fetchedPhotos = data.data.map((p: any, index: number) => ({
+                    ...p,
+                    id: index + 1
+                }));
+
+                if (isReset) {
+                    if (shuffle) {
+                        setPhotos([...fetchedPhotos].sort(() => 0.5 - Math.random()));
+                    } else {
+                        setPhotos(fetchedPhotos);
+                    }
+                } else {
+                    setPhotos(prev => [...prev, ...fetchedPhotos]);
+                }
+
+                // If a hard limit is set (like on home page), we don't paginate
+                if (limit) {
+                    setHasMore(false);
+                } else {
+                    setHasMore(data.pagination.hasMore);
+                }
+            }
+        } catch (error) {
+            console.error("Failed to fetch photos:", error);
+        } finally {
+            setLoading(false);
+            setLoadingMore(false);
+        }
+    };
 
     useEffect(() => {
         setMounted(true);
-        const fetchPhotos = async () => {
-            try {
-                const res = await fetch('/api/photos');
+        setPage(1);
+        fetchPhotos(1, true);
+    }, [limit, shuffle]);
 
-                // Debug logging
-                if (!res.ok) {
-                    const text = await res.text();
-                    console.error('API Error:', res.status, res.statusText, text);
-                    setLoading(false); // Ensure loading state is reset
-                    return;
-                }
-
-                const text = await res.text();
-                // console.log('API Response:', text); // Uncomment to see raw JSON
-
-                try {
-                    const data = JSON.parse(text);
-                    if (data.success) {
-                        const fetchedPhotos = data.data.map((p: any, index: number) => ({
-                            ...p,
-                            id: index + 1
-                        }));
-                        setPhotos(fetchedPhotos);
-                        if (shuffle) {
-                            setShuffledPhotos([...fetchedPhotos].sort(() => 0.5 - Math.random()));
-                        } else {
-                            setShuffledPhotos(fetchedPhotos);
-                        }
-                    }
-                } catch (jsonError) {
-                    console.error('JSON Parse Error:', jsonError);
-                    console.error('Raw Text causing error:', text);
-                }
-
-            } catch (error) {
-                console.error("Failed to fetch photos:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchPhotos();
-    }, [shuffle]);
+    const loadMore = () => {
+        const nextPage = page + 1;
+        setPage(nextPage);
+        fetchPhotos(nextPage);
+    };
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -130,19 +144,14 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid' }:
         router.push(pathname, { scroll: false });
     };
 
-    let displayedPhotos = shuffledPhotos;
-    if (limit) {
-        displayedPhotos = displayedPhotos.slice(0, limit);
-    }
-
-    if (loading) return null; // Or a skeleton loader if preferred
+    if (loading && page === 1) return <div className="text-white/40 text-center py-20">Loading photos...</div>;
 
     // Lightbox Component
     const Lightbox = () => {
         if (!isLightboxOpen || !mounted) return null;
 
         // If photo ID is invalid (e.g. from bad URL), close lightbox
-        if (initialSlideIndex === -1) {
+        if (initialSlideIndex === -1 && photos.length > 0) {
             closeLightbox();
             return null;
         }
@@ -166,7 +175,7 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid' }:
                     modules={[Zoom, Navigation]}
                     className="w-full h-full"
                 >
-                    {displayedPhotos.map((photo) => (
+                    {photos.map((photo) => (
                         <SwiperSlide key={String(photo._id || photo.id)} className="flex items-center justify-center bg-transparent">
                             <div className="swiper-zoom-container w-full h-full flex items-center justify-center">
                                 <div className="relative w-full h-full max-w-[90vw] max-h-[90vh]">
@@ -174,7 +183,7 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid' }:
                                         src={photo.src}
                                         alt={photo.title}
                                         fill
-                                        unoptimized
+                                        sizes="90vw"
                                         className="object-contain"
                                         priority
                                     />
@@ -211,17 +220,15 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid' }:
     };
 
     if (variant === 'swipe') {
-        const middleIndex = Math.floor(displayedPhotos.length / 2);
-
         return (
             <div className="w-full py-10 relative group">
-                {/* Left Navigation Zone - Click to swipe Right (Prev) */}
+                {/* Left Navigation Zone */}
                 <div
                     className="absolute top-0 bottom-0 left-0 w-[15%] z-20 cursor-pointer hover:bg-black/5 transition-colors"
                     onClick={() => swiperInstance?.slidePrev()}
                 />
 
-                {/* Right Navigation Zone - Click to swipe Left (Next) */}
+                {/* Right Navigation Zone */}
                 <div
                     className="absolute top-0 bottom-0 right-0 w-[15%] z-20 cursor-pointer hover:bg-black/5 transition-colors"
                     onClick={() => swiperInstance?.slideNext()}
@@ -229,15 +236,14 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid' }:
 
                 <Swiper
                     onSwiper={setSwiperInstance}
-                    // initialSlide removed for loop flow
                     effect={'coverflow'}
                     grabCursor={true}
                     freeMode={true}
                     centeredSlides={true}
                     slidesPerView={'auto'}
                     loop={true}
-                    speed={800} // Smoother transition
-                    slideToClickedSlide={true} // Click to swipe
+                    speed={800}
+                    slideToClickedSlide={true}
                     coverflowEffect={{
                         rotate: 0,
                         stretch: 0,
@@ -252,14 +258,14 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid' }:
                     modules={[Autoplay, EffectCoverflow, Pagination, FreeMode]}
                     className="w-full"
                 >
-                    {displayedPhotos.map((photo) => (
+                    {photos.map((photo) => (
                         <SwiperSlide key={photo._id} className="!w-[300px] !h-[400px] md:!w-[400px] md:!h-[500px]">
                             <div className="relative w-full h-full rounded-lg overflow-hidden shadow-xl">
                                 <Image
                                     src={photo.src}
                                     alt={photo.title}
                                     fill
-                                    unoptimized
+                                    sizes="(max-width: 768px) 300px, 400px"
                                     className="object-cover"
                                 />
                                 <div className="absolute inset-0 bg-black/20" />
@@ -273,32 +279,47 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid' }:
 
     return (
         <>
-            <div className={`${compact
-                ? "grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"
-                : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-                }`}>
-                {displayedPhotos.map((photo, index) => (
-                    <div
-                        key={photo._id}
-                        onClick={() => openLightbox(photo._id)}
-                        className={`group relative aspect-[4/5] overflow-hidden rounded-3xl cursor-pointer ${compact
-                            ? "transition-all duration-500 hover:scale-110 hover:z-50 hover:shadow-2xl opacity-80 hover:opacity-100"
-                            : ""
-                            }`}
-                    >
-                        <Image
-                            src={photo.src}
-                            alt={photo.title}
-                            fill
-                            unoptimized
-                            className={`object-cover transition-transform duration-700 ${compact ? "" : "group-hover:scale-110"
+            <div className={`space-y-12 ${compact ? "" : "pb-20"}`}>
+                <div className={`${compact
+                    ? "grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"
+                    : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                    }`}>
+                    {photos.map((photo, index) => (
+                        <div
+                            key={photo._id}
+                            onClick={() => openLightbox(photo._id)}
+                            className={`group relative aspect-[4/5] overflow-hidden rounded-3xl cursor-pointer ${compact
+                                ? "transition-all duration-500 hover:scale-110 hover:z-50 hover:shadow-2xl opacity-80 hover:opacity-100"
+                                : ""
                                 }`}
-                        />
+                        >
+                            <Image
+                                src={photo.src}
+                                alt={photo.title}
+                                fill
+                                sizes={compact ? "(max-width: 768px) 50vw, 16vw" : "(max-width: 768px) 100vw, 33vw"}
+                                className={`object-cover transition-transform duration-700 ${compact ? "" : "group-hover:scale-110"
+                                    }`}
+                            />
 
-                        {/* Hover Overlay only (no text) */}
-                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                            {/* Hover Overlay only (no text) */}
+                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        </div>
+                    ))}
+                </div>
+
+                {!compact && hasMore && (
+                    <div className="flex justify-center pt-8">
+                        <button
+                            onClick={loadMore}
+                            disabled={loadingMore}
+                            className="bg-white/10 border border-white/20 text-white px-8 py-3 rounded-full hover:bg-white/20 transition-all font-medium flex items-center gap-2 disabled:opacity-50"
+                        >
+                            {loadingMore ? 'Loading Photos...' : 'Load More Works'}
+                            {!loadingMore && <ChevronRight size={16} />}
+                        </button>
                     </div>
-                ))}
+                )}
             </div>
 
             <Lightbox />
