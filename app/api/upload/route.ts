@@ -16,6 +16,10 @@ export async function POST(req: Request) {
         const result: any = await new Promise((resolve, reject) => {
             cloudinary.uploader.upload_stream({
                 folder: 'alpha-crew',
+                transformation: [
+                    { width: 2048, height: 2048, crop: 'limit' }, // Resize if larger than 2K
+                    { quality: 'auto', fetch_format: 'auto' }     // Auto compression & format
+                ]
             }, (error, result) => {
                 if (error) {
                     reject(error);
