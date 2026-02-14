@@ -228,6 +228,7 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid' }:
                                 ? "transition-all duration-500 hover:scale-110 hover:z-50 hover:shadow-2xl opacity-80 hover:opacity-100"
                                 : ""
                                 }`}
+                            style={{ contentVisibility: 'auto' }}
                         >
                             <Image
                                 src={photo.src}
