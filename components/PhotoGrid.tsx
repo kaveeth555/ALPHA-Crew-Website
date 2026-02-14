@@ -46,10 +46,6 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid' }:
     const [loadingMore, setLoadingMore] = useState(false);
     const [mounted, setMounted] = useState(false);
 
-    // Navigation Refs for safe Swiper integration
-    const prevRef = useRef<HTMLButtonElement>(null);
-    const nextRef = useRef<HTMLButtonElement>(null);
-
     // Derived state from URL
     const photoId = searchParams.get("photoId");
     // Check against _id (string) or id (number) for compatibility
@@ -146,79 +142,6 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid' }:
 
     if (loading && page === 1) return <div className="text-white/40 text-center py-20">Loading photos...</div>;
 
-    // Lightbox Component
-    const Lightbox = () => {
-        if (!isLightboxOpen || !mounted) return null;
-
-        // If photo ID is invalid (e.g. from bad URL), close lightbox
-        if (initialSlideIndex === -1 && photos.length > 0) {
-            closeLightbox();
-            return null;
-        }
-
-        return createPortal(
-            <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-sm">
-                <Swiper
-                    initialSlide={initialSlideIndex}
-                    zoom={true}
-                    onBeforeInit={(swiper) => {
-                        // @ts-ignore
-                        swiper.params.navigation.prevEl = prevRef.current;
-                        // @ts-ignore
-                        swiper.params.navigation.nextEl = nextRef.current;
-                    }}
-                    navigation={{
-                        prevEl: prevRef.current,
-                        nextEl: nextRef.current,
-                    }}
-                    keyboard={{ enabled: true }}
-                    modules={[Zoom, Navigation]}
-                    className="w-full h-full"
-                >
-                    {photos.map((photo) => (
-                        <SwiperSlide key={String(photo._id || photo.id)} className="flex items-center justify-center bg-transparent">
-                            <div className="swiper-zoom-container w-full h-full flex items-center justify-center">
-                                <div className="relative w-full h-full max-w-[90vw] max-h-[90vh]">
-                                    <Image
-                                        src={photo.src}
-                                        alt={photo.title}
-                                        fill
-                                        sizes="90vw"
-                                        className="object-contain"
-                                        priority
-                                    />
-                                </div>
-                            </div>
-                        </SwiperSlide>
-                    ))}
-                </Swiper>
-
-                {/* Close Button */}
-                <button
-                    onClick={closeLightbox}
-                    className="absolute top-24 right-4 z-[250] p-2 text-white/70 hover:text-white transition-colors bg-black/20 hover:bg-black/40 rounded-full cursor-pointer"
-                >
-                    <X size={32} />
-                </button>
-
-                {/* Navigation Buttons - Using Refs */}
-                <button
-                    ref={prevRef}
-                    className="hidden md:flex absolute left-4 z-[250] p-3 text-white/50 hover:text-white transition-colors cursor-pointer"
-                >
-                    <ChevronLeft size={48} />
-                </button>
-                <button
-                    ref={nextRef}
-                    className="hidden md:flex absolute right-4 z-[250] p-3 text-white/50 hover:text-white transition-colors cursor-pointer"
-                >
-                    <ChevronRight size={48} />
-                </button>
-            </div>,
-            document.body
-        );
-    };
-
     if (variant === 'swipe') {
         return (
             <div className="w-full py-10 relative group">
@@ -258,8 +181,8 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid' }:
                     modules={[Autoplay, EffectCoverflow, Pagination, FreeMode]}
                     className="w-full"
                 >
-                    {photos.map((photo) => (
-                        <SwiperSlide key={photo._id} className="!w-[300px] !h-[400px] md:!w-[400px] md:!h-[500px]">
+                    {photos.map((photo, index) => (
+                        <SwiperSlide key={photo._id || index} className="!w-[300px] !h-[400px] md:!w-[400px] md:!h-[500px]">
                             <div className="relative w-full h-full rounded-lg overflow-hidden shadow-xl">
                                 <Image
                                     src={photo.src}
@@ -267,6 +190,7 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid' }:
                                     fill
                                     sizes="(max-width: 768px) 300px, 400px"
                                     className="object-cover"
+                                    priority={index < 2}
                                 />
                                 <div className="absolute inset-0 bg-black/20" />
                             </div>
@@ -322,7 +246,98 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid' }:
                 )}
             </div>
 
-            <Lightbox />
+            <Lightbox
+                isOpen={isLightboxOpen}
+                initialSlideIndex={initialSlideIndex}
+                photos={photos}
+                onClose={closeLightbox}
+                mounted={mounted}
+            />
         </>
     );
 }
+
+// Extracted Lightbox Component
+interface LightboxProps {
+    isOpen: boolean;
+    initialSlideIndex: number;
+    photos: Photo[];
+    onClose: () => void;
+    mounted: boolean;
+}
+
+const Lightbox = ({ isOpen, initialSlideIndex, photos, onClose, mounted }: LightboxProps) => {
+    // Navigation Refs for safe Swiper integration
+    const prevRef = useRef<HTMLButtonElement>(null);
+    const nextRef = useRef<HTMLButtonElement>(null);
+
+    if (!isOpen || !mounted) return null;
+
+    // If photo ID is invalid (e.g. from bad URL), close lightbox
+    if (initialSlideIndex === -1 && photos.length > 0) {
+        onClose();
+        return null;
+    }
+
+    return createPortal(
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-sm">
+            <Swiper
+                initialSlide={initialSlideIndex}
+                zoom={true}
+                onBeforeInit={(swiper) => {
+                    // @ts-ignore
+                    swiper.params.navigation.prevEl = prevRef.current;
+                    // @ts-ignore
+                    swiper.params.navigation.nextEl = nextRef.current;
+                }}
+                navigation={{
+                    prevEl: prevRef.current,
+                    nextEl: nextRef.current,
+                }}
+                keyboard={{ enabled: true }}
+                modules={[Zoom, Navigation]}
+                className="w-full h-full"
+            >
+                {photos.map((photo) => (
+                    <SwiperSlide key={String(photo._id || photo.id)} className="flex items-center justify-center bg-transparent">
+                        <div className="swiper-zoom-container w-full h-full flex items-center justify-center">
+                            <div className="relative w-full h-full max-w-[90vw] max-h-[90vh]">
+                                <Image
+                                    src={photo.src}
+                                    alt={photo.title}
+                                    fill
+                                    sizes="90vw"
+                                    className="object-contain"
+                                    priority
+                                />
+                            </div>
+                        </div>
+                    </SwiperSlide>
+                ))}
+            </Swiper>
+
+            {/* Close Button */}
+            <button
+                onClick={onClose}
+                className="absolute top-24 right-4 z-[250] p-2 text-white/70 hover:text-white transition-colors bg-black/20 hover:bg-black/40 rounded-full cursor-pointer"
+            >
+                <X size={32} />
+            </button>
+
+            {/* Navigation Buttons - Using Refs */}
+            <button
+                ref={prevRef}
+                className="hidden md:flex absolute left-4 z-[250] p-3 text-white/50 hover:text-white transition-colors cursor-pointer"
+            >
+                <ChevronLeft size={48} />
+            </button>
+            <button
+                ref={nextRef}
+                className="hidden md:flex absolute right-4 z-[250] p-3 text-white/50 hover:text-white transition-colors cursor-pointer"
+            >
+                <ChevronRight size={48} />
+            </button>
+        </div>,
+        document.body
+    );
+};
