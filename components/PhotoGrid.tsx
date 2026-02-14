@@ -299,7 +299,11 @@ const Lightbox = ({ isOpen, initialSlideIndex, photos, onClose, mounted }: Light
             <Swiper
                 initialSlide={initialSlideIndex}
                 zoom={true}
-                virtual={true}
+                virtual={{
+                    slides: photos,
+                    addSlidesAfter: 2,
+                    addSlidesBefore: 2
+                }}
                 onBeforeInit={(swiper) => {
                     // @ts-ignore
                     swiper.params.navigation.prevEl = prevRef.current;
@@ -314,7 +318,7 @@ const Lightbox = ({ isOpen, initialSlideIndex, photos, onClose, mounted }: Light
                 modules={[Zoom, Navigation, Virtual]}
                 className="w-full h-full"
             >
-                {photos.map((photo, index) => (
+                {(photo: Photo, index: number) => (
                     <SwiperSlide key={photo._id || index} virtualIndex={index} className="flex items-center justify-center bg-transparent">
                         <div className="swiper-zoom-container w-full h-full flex items-center justify-center">
                             <div className="relative w-full h-full max-w-[90vw] max-h-[90vh]">
@@ -329,7 +333,7 @@ const Lightbox = ({ isOpen, initialSlideIndex, photos, onClose, mounted }: Light
                             </div>
                         </div>
                     </SwiperSlide>
-                ))}
+                )}
             </Swiper>
 
             {/* Close Button */}
