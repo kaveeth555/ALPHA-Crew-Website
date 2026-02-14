@@ -234,6 +234,8 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid' }:
                                 sizes={compact ? "(max-width: 768px) 50vw, 16vw" : "(max-width: 768px) 100vw, 33vw"}
                                 className={`object-cover transition-transform duration-700 ${compact ? "" : "group-hover:scale-110"
                                     }`}
+                                priority={index < 4}
+                                quality={isMobile ? 60 : 75}
                             />
 
                             {/* Hover Overlay only (no text) */}
