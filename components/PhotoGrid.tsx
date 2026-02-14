@@ -33,18 +33,19 @@ interface PhotoGridProps {
     shuffle?: boolean;
     compact?: boolean;
     variant?: 'grid' | 'swipe';
+    initialPhotos?: Photo[];
 }
 
-export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid' }: PhotoGridProps) {
+export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid', initialPhotos = [] }: PhotoGridProps) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
 
     const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
-    const [photos, setPhotos] = useState<Photo[]>([]);
+    const [photos, setPhotos] = useState<Photo[]>(initialPhotos);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(initialPhotos.length === 0);
     const [loadingMore, setLoadingMore] = useState(false);
     const [mounted, setMounted] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
@@ -111,7 +112,9 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid' }:
         window.addEventListener('resize', checkMobile);
 
         setPage(1);
-        fetchPhotos(1, true);
+        if (initialPhotos.length === 0) {
+            fetchPhotos(1, true);
+        }
 
         return () => window.removeEventListener('resize', checkMobile);
     }, [limit, shuffle]);

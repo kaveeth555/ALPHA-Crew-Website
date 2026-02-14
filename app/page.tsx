@@ -1,29 +1,43 @@
-'use client';
-
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Hero from "@/components/Hero";
 import PhotoGrid from "@/components/PhotoGrid";
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect, Suspense } from 'react';
+import { Suspense } from 'react';
+import dbConnect from '@/lib/db';
+import Photo from '@/models/Photo';
+import Content from '@/models/Content';
 
-export default function Home() {
-  const [videoUrl, setVideoUrl] = useState('/hero-background.mp4');
-  const [heroTitle, setHeroTitle] = useState('Capture Your Moments With Us');
+async function getHomeData() {
+  await dbConnect();
 
-  useEffect(() => {
-    // Fetch dynamic content
-    fetch('/api/content')
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.data) {
-          if (data.data.home_video_url) setVideoUrl(data.data.home_video_url);
-          if (data.data.home_title) setHeroTitle(data.data.home_title);
-        }
-      })
-      .catch(err => console.error('Failed to fetch content:', err));
-  }, []);
+  const [photos, content] = await Promise.all([
+    Photo.find({}).sort({ order: 1, createdAt: -1 }).limit(12).lean(),
+    Content.find({}).lean()
+  ]);
+
+  const contentMap = content.reduce((acc: any, curr: any) => {
+    acc[curr.key] = curr.value;
+    return acc;
+  }, {});
+
+  // Serialize _id
+  const serializedPhotos = photos.map((p: any) => ({
+    ...p,
+    _id: p._id.toString(),
+    id: p._id.toString()
+  }));
+
+  return {
+    photos: serializedPhotos,
+    videoUrl: contentMap['home_video_url'] || '/hero-background.mp4',
+    heroTitle: contentMap['home_title'] || 'Capture Your Moments With Us'
+  };
+}
+
+export default async function Home() {
+  const { photos, videoUrl, heroTitle } = await getHomeData();
 
   return (
     <main className="min-h-screen bg-black text-white overflow-x-hidden">
@@ -56,7 +70,7 @@ export default function Home() {
             </Link>
           </div>
           <Suspense fallback={<div className="text-white/30 text-center py-10">Loading photos...</div>}>
-            <PhotoGrid limit={12} shuffle={true} compact={true} variant="swipe" />
+            <PhotoGrid limit={12} shuffle={true} compact={true} variant="swipe" initialPhotos={photos} />
           </Suspense>
         </div>
         <Footer />
