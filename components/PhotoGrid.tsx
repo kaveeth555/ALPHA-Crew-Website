@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import Image from "next/image";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, EffectCoverflow, Pagination, FreeMode, Zoom, Navigation } from 'swiper/modules';
+import { Autoplay, EffectCoverflow, Pagination, FreeMode, Zoom, Navigation, Virtual } from 'swiper/modules';
 import type { Swiper as SwiperType } from "swiper";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -16,7 +16,9 @@ import 'swiper/css/pagination';
 import 'swiper/css/autoplay';
 import 'swiper/css/free-mode';
 import 'swiper/css/zoom';
+import 'swiper/css/zoom';
 import 'swiper/css/navigation';
+import 'swiper/css/virtual';
 
 interface Photo {
     _id: string;
@@ -296,6 +298,7 @@ const Lightbox = ({ isOpen, initialSlideIndex, photos, onClose, mounted }: Light
             <Swiper
                 initialSlide={initialSlideIndex}
                 zoom={true}
+                virtual={true}
                 onBeforeInit={(swiper) => {
                     // @ts-ignore
                     swiper.params.navigation.prevEl = prevRef.current;
@@ -307,11 +310,11 @@ const Lightbox = ({ isOpen, initialSlideIndex, photos, onClose, mounted }: Light
                     nextEl: nextRef.current,
                 }}
                 keyboard={{ enabled: true }}
-                modules={[Zoom, Navigation]}
+                modules={[Zoom, Navigation, Virtual]}
                 className="w-full h-full"
             >
-                {photos.map((photo) => (
-                    <SwiperSlide key={String(photo._id || photo.id)} className="flex items-center justify-center bg-transparent">
+                {photos.map((photo, index) => (
+                    <SwiperSlide key={photo._id || index} virtualIndex={index} className="flex items-center justify-center bg-transparent">
                         <div className="swiper-zoom-container w-full h-full flex items-center justify-center">
                             <div className="relative w-full h-full max-w-[90vw] max-h-[90vh]">
                                 <Image
@@ -320,7 +323,7 @@ const Lightbox = ({ isOpen, initialSlideIndex, photos, onClose, mounted }: Light
                                     fill
                                     sizes="90vw"
                                     className="object-contain"
-                                    priority
+                                    priority={index === initialSlideIndex}
                                 />
                             </div>
                         </div>
