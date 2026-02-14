@@ -45,6 +45,7 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid' }:
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
 
     // Derived state from URL
     const photoId = searchParams.get("photoId");
@@ -102,8 +103,15 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid' }:
 
     useEffect(() => {
         setMounted(true);
+        const checkMobile = () => setIsMobile(window.innerWidth < 768);
+
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+
         setPage(1);
         fetchPhotos(1, true);
+
+        return () => window.removeEventListener('resize', checkMobile);
     }, [limit, shuffle]);
 
     const loadMore = () => {
@@ -159,11 +167,11 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid' }:
 
                 <Swiper
                     onSwiper={setSwiperInstance}
-                    effect={'coverflow'}
+                    effect={isMobile ? 'slide' : 'coverflow'}
                     grabCursor={true}
                     freeMode={true}
                     centeredSlides={true}
-                    slidesPerView={'auto'}
+                    slidesPerView={isMobile ? 1.5 : 'auto'}
                     loop={true}
                     speed={800}
                     slideToClickedSlide={true}
@@ -180,9 +188,10 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid' }:
                     }}
                     modules={[Autoplay, EffectCoverflow, Pagination, FreeMode]}
                     className="w-full"
+                    style={{ transform: 'translate3d(0,0,0)' }} // Force hardware acceleration
                 >
                     {photos.map((photo, index) => (
-                        <SwiperSlide key={photo._id || index} className="!w-[300px] !h-[400px] md:!w-[400px] md:!h-[500px]">
+                        <SwiperSlide key={photo._id || index} className={isMobile ? "!w-[280px] !h-[380px]" : "!w-[300px] !h-[400px] md:!w-[400px] md:!h-[500px]"}>
                             <div className="relative w-full h-full rounded-lg overflow-hidden shadow-xl">
                                 <Image
                                     src={photo.src}
