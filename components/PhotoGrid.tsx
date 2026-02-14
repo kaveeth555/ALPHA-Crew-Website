@@ -167,11 +167,11 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid' }:
 
                 <Swiper
                     onSwiper={setSwiperInstance}
-                    effect={isMobile ? 'slide' : 'coverflow'}
+                    effect={'coverflow'}
                     grabCursor={true}
                     freeMode={true}
                     centeredSlides={true}
-                    slidesPerView={isMobile ? 1.5 : 'auto'}
+                    slidesPerView={'auto'}
                     loop={true}
                     speed={800}
                     slideToClickedSlide={true}
@@ -190,7 +190,7 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid' }:
                     className="w-full"
                     style={{ transform: 'translate3d(0,0,0)' }} // Force hardware acceleration
                 >
-                    {photos.map((photo, index) => (
+                    {(isMobile ? photos.slice(0, 6) : photos).map((photo, index) => (
                         <SwiperSlide key={photo._id || index} className={isMobile ? "!w-[280px] !h-[380px]" : "!w-[300px] !h-[400px] md:!w-[400px] md:!h-[500px]"}>
                             <div className="relative w-full h-full rounded-lg overflow-hidden shadow-xl">
                                 <Image
@@ -199,7 +199,8 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid' }:
                                     fill
                                     sizes="(max-width: 768px) 300px, 400px"
                                     className="object-cover"
-                                    priority={index < 2}
+                                    priority={index < 1}
+                                    quality={isMobile ? 60 : 75}
                                 />
                                 <div className="absolute inset-0 bg-black/20" />
                             </div>
