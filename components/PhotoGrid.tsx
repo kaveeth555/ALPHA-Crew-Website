@@ -237,11 +237,11 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid', i
                                 src={photo.src}
                                 alt={photo.title}
                                 fill
-                                sizes={compact ? "(max-width: 768px) 50vw, 16vw" : "(max-width: 768px) 100vw, 33vw"}
+                                sizes={compact ? "(max-width: 768px) 50vw, 16vw" : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
                                 className={`object-cover transition-transform duration-700 ${compact ? "" : "group-hover:scale-110"
                                     }`}
                                 priority={index < 4}
-                                quality={isMobile ? 60 : 75}
+                                quality={compact ? 50 : 60}
                             />
 
                             {/* Hover Overlay only (no text) */}
@@ -251,14 +251,23 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid', i
                 </div>
 
                 {!compact && hasMore && (
-                    <div className="flex justify-center pt-8">
+                    <div className="flex flex-col items-center pt-8 gap-4">
                         <button
                             onClick={loadMore}
                             disabled={loadingMore}
-                            className="bg-white/10 border border-white/20 text-white px-8 py-3 rounded-full hover:bg-white/20 transition-all font-medium flex items-center gap-2 disabled:opacity-50"
+                            className="bg-white/10 border border-white/20 text-white px-8 py-3 rounded-full hover:bg-white/20 transition-all font-medium flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group active:scale-95"
                         >
-                            {loadingMore ? 'Loading Photos...' : 'Load More Works'}
-                            {!loadingMore && <ChevronRight size={16} />}
+                            {loadingMore ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin" />
+                                    <span>Loading...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <span>Load More</span>
+                                    <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                                </>
+                            )}
                         </button>
                     </div>
                 )}

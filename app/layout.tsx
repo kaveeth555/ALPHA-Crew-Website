@@ -45,12 +45,17 @@ export const metadata: Metadata = {
     description: "Capturing moments with authentic and beautiful imagery.",
     images: ["/logo-full.png"],
   },
-  icons: {
-    icon: "/icon.png",
-    shortcut: "/icon.png",
-    apple: "/icon.png",
-  },
-  viewport: "width=device-width, initial-scale=1, maximum-scale=5",
+  /* icons: {
+    icon: "/logo-short.png",
+    shortcut: "/logo-short.png",
+    apple: "/logo-short.png",
+  }, */
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({
