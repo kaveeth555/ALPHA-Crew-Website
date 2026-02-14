@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRef, useState, useEffect } from "react";
-import { Play, Pause } from "lucide-react";
+import { Play, Pause, Loader2 } from "lucide-react";
 
 export default function Hero({
     videoUrl = "/hero-background.mp4",
@@ -55,6 +55,12 @@ export default function Hero({
                     <source src={videoUrl} type="video/mp4" />
                     Your browser does not support the video tag.
                 </video>
+                {/* Loading Spinner */}
+                {!isPlaying && (
+                    <div className="absolute inset-0 flex items-center justify-center z-0 bg-black/20 backdrop-blur-sm transition-opacity duration-500">
+                        <Loader2 className="w-16 h-16 text-white/70 animate-spin drop-shadow-lg" />
+                    </div>
+                )}
             </div>
 
             <div className="relative z-20 text-center px-6 max-w-5xl mx-auto space-y-8 pt-20">
