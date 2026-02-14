@@ -26,21 +26,14 @@ export default function Hero({
         }
     };
 
-    // Auto-play on mount/visible
+    // Auto-play handled by video tag attributes
     useEffect(() => {
-        const playVideo = async () => {
-            if (videoRef.current) {
-                try {
-                    await videoRef.current.play();
-                    setIsPlaying(true);
-                } catch (err) {
-                    console.log("Video autoplay failed (likely needs user interaction)", err);
-                }
+        if (videoRef.current) {
+            // Ensure video plays if autoplay didn't trigger for some reason
+            if (videoRef.current.paused) {
+                videoRef.current.play().catch(e => console.log("Autoplay blocked:", e));
             }
-        };
-        // Small delay to prioritize main thread for other things
-        const timer = setTimeout(playVideo, 100);
-        return () => clearTimeout(timer);
+        }
     }, []);
 
     return (
@@ -50,10 +43,11 @@ export default function Hero({
                 <div className={`absolute inset-0 bg-gradient-to-b from-black/60 via-black/20 to-black z-10 transition-opacity duration-1000 ${isPlaying ? 'opacity-40' : 'opacity-100'}`} />
                 <video
                     ref={videoRef}
+                    autoPlay
                     loop
                     muted
                     playsInline
-                    preload="none"
+                    preload="auto"
                     poster="/explore-background.jpg"
                     className="absolute inset-0 w-full h-full object-cover"
                     onLoadedData={() => setIsPlaying(true)}
