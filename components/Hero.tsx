@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Play, Pause } from "lucide-react";
 
 export default function Hero({
@@ -26,6 +26,23 @@ export default function Hero({
         }
     };
 
+    // Auto-play on mount/visible
+    useEffect(() => {
+        const playVideo = async () => {
+            if (videoRef.current) {
+                try {
+                    await videoRef.current.play();
+                    setIsPlaying(true);
+                } catch (err) {
+                    console.log("Video autoplay failed (likely needs user interaction)", err);
+                }
+            }
+        };
+        // Small delay to prioritize main thread for other things
+        const timer = setTimeout(playVideo, 100);
+        return () => clearTimeout(timer);
+    }, []);
+
     return (
         <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
             {/* Background Video */}
@@ -36,7 +53,10 @@ export default function Hero({
                     loop
                     muted
                     playsInline
+                    preload="none"
+                    poster="/explore-background.jpg"
                     className="absolute inset-0 w-full h-full object-cover"
+                    onLoadedData={() => setIsPlaying(true)}
                 >
                     <source src={videoUrl} type="video/mp4" />
                     Your browser does not support the video tag.
