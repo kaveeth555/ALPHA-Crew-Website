@@ -35,7 +35,7 @@ export default function AdminPage() {
 
     const fetchPhotos = async () => {
         try {
-            const res = await fetch('/api/photos');
+            const res = await fetch('/api/photos?limit=1000');
             if (!res.ok) {
                 console.error('Fetch failed:', res.status, await res.text());
                 return;
