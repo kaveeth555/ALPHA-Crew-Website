@@ -190,17 +190,17 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid' }:
                     className="w-full"
                     style={{ transform: 'translate3d(0,0,0)' }} // Force hardware acceleration
                 >
-                    {(isMobile ? photos.slice(0, 6) : photos).map((photo, index) => (
-                        <SwiperSlide key={photo._id || index} className={isMobile ? "!w-[280px] !h-[380px]" : "!w-[300px] !h-[400px] md:!w-[400px] md:!h-[500px]"}>
+                    {(isMobile ? photos.slice(0, 5) : photos).map((photo, index) => (
+                        <SwiperSlide key={photo._id || index} className={`${isMobile ? "!w-[280px] !h-[380px]" : "!w-[300px] !h-[400px] md:!w-[400px] md:!h-[500px]"} will-change-transform`}>
                             <div className="relative w-full h-full rounded-lg overflow-hidden shadow-xl">
                                 <Image
                                     src={photo.src}
                                     alt={photo.title}
                                     fill
-                                    sizes="(max-width: 768px) 300px, 400px"
+                                    sizes="(max-width: 768px) 280px, 400px"
                                     className="object-cover"
                                     priority={index < 1}
-                                    quality={isMobile ? 60 : 75}
+                                    quality={isMobile ? 50 : 75}
                                 />
                                 <div className="absolute inset-0 bg-black/20" />
                             </div>
