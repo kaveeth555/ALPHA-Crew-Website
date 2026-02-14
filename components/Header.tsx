@@ -66,7 +66,7 @@ export default function Header() {
 
                 {/* Mobile Navigation Dropdown - Liquid Glass Style */}
                 {isOpen && (
-                    <div className="absolute top-full right-0 mt-4 w-64 p-6 bg-black/95 backdrop-blur-3xl border border-white/10 rounded-3xl flex flex-col items-center gap-6 text-lg font-serif md:hidden shadow-2xl animate-in fade-in slide-in-from-top-5 duration-300 origin-top-right">
+                    <div className="absolute top-16 right-0 mt-2 w-48 p-4 bg-black/80 backdrop-blur-md border border-white/10 rounded-2xl flex flex-col items-center gap-4 text-sm font-medium tracking-widest md:hidden shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200 origin-top-right">
                         <NavLink href="/" text="HOME" onClick={() => setIsOpen(false)} />
                         <NavLink href="/gallery" text="GALLERY" onClick={() => setIsOpen(false)} />
                         <NavLink href="/about" text="ABOUT" onClick={() => setIsOpen(false)} />

@@ -2,13 +2,31 @@ import { Suspense } from 'react';
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PhotoGrid from "@/components/PhotoGrid";
-
+import GallerySkeleton from "@/components/GallerySkeleton";
 import Link from "next/link";
 import Image from "next/image";
+import dbConnect from '@/lib/db';
+import Photo from '@/models/Photo';
 
-export default function Gallery() {
+async function getGalleryPhotos() {
+    await dbConnect();
+    const photos = await Photo.find({})
+        .sort({ order: 1, createdAt: -1 })
+        .limit(12) // Initial load limit
+        .lean();
+
+    return photos.map((p: any) => ({
+        ...p,
+        _id: p._id.toString(),
+        id: p._id.toString()
+    }));
+}
+
+export default async function Gallery() {
+    const initialPhotos = await getGalleryPhotos();
+
     return (
-        <main className="min-h-screen flex flex-col relative">
+        <main className="min-h-screen flex flex-col relative bg-black text-white">
             <div className="fixed inset-0 z-0">
                 <Image
                     src="/explore-background.jpg"
@@ -24,14 +42,14 @@ export default function Gallery() {
             <Header />
             <div className="pt-32 pb-20 px-6 relative z-10">
                 <div className="container mx-auto space-y-12">
-                    <div className="space-y-4">
-                        <h1 className="text-4xl md:text-5xl font-serif font-bold">Gallery</h1>
-                        <p className="text-muted-foreground max-w-2xl">
+                    <div className="space-y-4 text-center md:text-left">
+                        <h1 className="text-4xl md:text-5xl font-serif font-bold tracking-tight drop-shadow-lg">Gallery</h1>
+                        <p className="text-white/70 max-w-2xl text-sm md:text-base leading-relaxed drop-shadow-md mx-auto md:mx-0">
                             A collection of moments frozen in time. Explore the world through our lens.
                         </p>
                     </div>
-                    <Suspense fallback={<div className="text-white/50 text-center py-20">Loading gallery...</div>}>
-                        <PhotoGrid />
+                    <Suspense fallback={<GallerySkeleton />}>
+                        <PhotoGrid initialPhotos={initialPhotos} limit={12} />
                     </Suspense>
                 </div>
             </div>
