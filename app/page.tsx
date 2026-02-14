@@ -31,7 +31,7 @@ async function getHomeData() {
 
   return {
     photos: serializedPhotos,
-    videoUrl: contentMap['home_video_url'] || '/hero-background.mp4',
+    videoUrl: contentMap['home_video_url'] || 'https://res.cloudinary.com/dnfc7ygik/video/upload/v1771060743/alpha-crew/hero-background.mp4',
     heroTitle: contentMap['home_title'] || 'Capture Your Moments With Us'
   };
 }
