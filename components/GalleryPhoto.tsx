@@ -36,7 +36,7 @@ export default function GalleryPhoto({ photo, index, compact, onClick }: Gallery
                 fill
                 sizes={compact ? "(max-width: 768px) 50vw, 16vw" : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
                 className={`object-cover transition-all duration-700 ${compact ? "" : "group-hover:scale-110"
-                    } ${isLoading ? "scale-110 blur-xl grayscale" : "scale-100 blur-0 grayscale-0"}`}
+                    } ${isLoading ? "scale-110 opacity-0" : "scale-100 opacity-100"}`}
                 onLoad={() => setIsLoading(false)}
                 priority={index < 4}
                 quality={50}
