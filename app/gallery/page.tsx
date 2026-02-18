@@ -27,7 +27,7 @@ export default async function Gallery() {
 
     return (
         <main className="min-h-screen flex flex-col relative bg-black text-white">
-            <div className="fixed inset-0 z-0">
+            <div className="fixed inset-0 z-0 hidden md:block">
                 <Image
                     src="/explore-background.jpg"
                     alt="Background"

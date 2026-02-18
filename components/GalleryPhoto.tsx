@@ -33,7 +33,7 @@ export default function GalleryPhoto({ photo, index, compact, onClick }: Gallery
                 src={photo.src}
                 alt={photo.title}
                 fill
-                sizes={compact ? "(max-width: 768px) 50vw, 16vw" : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
+                sizes={compact ? "(max-width: 768px) 50vw, 16vw" : "(max-width: 768px) 50vw, (max-width: 1200px) 50vw, 33vw"}
                 className={`object-cover transition-all duration-500 ease-in-out ${compact ? "" : "md:group-hover:scale-105"
                     } ${isLoading ? "scale-100 opacity-0" : "scale-100 opacity-100"}`}
                 onLoad={() => setIsLoading(false)}
