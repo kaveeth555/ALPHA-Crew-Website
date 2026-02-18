@@ -1,0 +1,54 @@
+"use client";
+
+import { useState } from "react";
+import Image from "next/image";
+
+interface Photo {
+    _id: string;
+    id: number;
+    src: string;
+    title: string;
+    photographer: string;
+}
+
+interface GalleryPhotoProps {
+    photo: Photo;
+    index: number;
+    compact?: boolean;
+    onClick: () => void;
+}
+
+export default function GalleryPhoto({ photo, index, compact, onClick }: GalleryPhotoProps) {
+    const [isLoading, setIsLoading] = useState(true);
+
+    return (
+        <div
+            onClick={onClick}
+            className={`group relative aspect-[4/5] overflow-hidden rounded-3xl cursor-pointer ${compact
+                ? "transition-all duration-500 hover:scale-110 hover:z-50 hover:shadow-2xl opacity-80 hover:opacity-100"
+                : ""
+                } ${isLoading ? "animate-pulse bg-white/10" : "bg-transparent"}`}
+            style={{ contentVisibility: 'auto' }}
+        >
+            <Image
+                src={photo.src}
+                alt={photo.title}
+                fill
+                sizes={compact ? "(max-width: 768px) 50vw, 16vw" : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
+                className={`object-cover transition-all duration-700 ${compact ? "" : "group-hover:scale-110"
+                    } ${isLoading ? "scale-110 blur-xl grayscale" : "scale-100 blur-0 grayscale-0"}`}
+                onLoad={() => setIsLoading(false)}
+                priority={index < 4}
+                quality={50}
+                placeholder="blur"
+                // Light gray/white blur placeholder as requested
+                blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII="
+            />
+
+            {/* Hover Overlay only (no text) - Hidden while loading */}
+            {!isLoading && (
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            )}
+        </div>
+    );
+}

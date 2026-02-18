@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
+import GalleryPhoto from "./GalleryPhoto";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, EffectCoverflow, Pagination, FreeMode, Zoom, Navigation, Virtual } from 'swiper/modules';
@@ -224,29 +225,13 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid', i
                     : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
                     }`}>
                     {photos.map((photo, index) => (
-                        <div
+                        <GalleryPhoto
                             key={photo._id}
+                            photo={photo}
+                            index={index}
+                            compact={compact}
                             onClick={() => openLightbox(photo._id)}
-                            className={`group relative aspect-[4/5] overflow-hidden rounded-3xl cursor-pointer ${compact
-                                ? "transition-all duration-500 hover:scale-110 hover:z-50 hover:shadow-2xl opacity-80 hover:opacity-100"
-                                : ""
-                                }`}
-                            style={{ contentVisibility: 'auto' }}
-                        >
-                            <Image
-                                src={photo.src}
-                                alt={photo.title}
-                                fill
-                                sizes={compact ? "(max-width: 768px) 50vw, 16vw" : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
-                                className={`object-cover transition-transform duration-700 ${compact ? "" : "group-hover:scale-110"
-                                    }`}
-                                priority={index < 4}
-                                quality={compact ? 50 : 60}
-                            />
-
-                            {/* Hover Overlay only (no text) */}
-                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        </div>
+                        />
                     ))}
                 </div>
 
@@ -341,6 +326,8 @@ const Lightbox = ({ isOpen, initialSlideIndex, photos, onClose, mounted }: Light
                                     sizes="90vw"
                                     className="object-contain"
                                     priority={index === initialSlideIndex}
+                                    placeholder="blur"
+                                    blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8/nP/fwAIgQOA80yV7AAAAABJRU5ErkJggg=="
                                 />
                             </div>
                         </div>
