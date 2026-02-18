@@ -37,7 +37,7 @@ export default function GalleryPhoto({ photo, index, compact, onClick }: Gallery
                 className={`object-cover transition-all duration-500 ease-in-out ${compact ? "" : "md:group-hover:scale-105"
                     } ${isLoading ? "scale-100 opacity-0" : "scale-100 opacity-100"}`}
                 onLoad={() => setIsLoading(false)}
-                priority={index < 2}
+                priority={false}
                 quality={40}
             />
 

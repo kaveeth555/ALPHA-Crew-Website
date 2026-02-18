@@ -12,7 +12,7 @@ async function getGalleryPhotos() {
     await dbConnect();
     const photos = await Photo.find({})
         .sort({ order: 1, createdAt: -1 })
-        .limit(12) // Initial load limit
+        .limit(8) // Initial load limit reduced for mobile stability
         .lean();
 
     return photos.map((p: any) => ({
@@ -33,7 +33,6 @@ export default async function Gallery() {
                     alt="Background"
                     fill
                     className="object-cover opacity-50"
-                    priority
                     quality={50}
                     sizes="(max-width: 768px) 640px, 100vw"
                 />
@@ -49,7 +48,7 @@ export default async function Gallery() {
                         </p>
                     </div>
                     <Suspense fallback={<GallerySkeleton />}>
-                        <PhotoGrid initialPhotos={initialPhotos} limit={12} />
+                        <PhotoGrid initialPhotos={initialPhotos} limit={8} />
                     </Suspense>
                 </div>
             </div>
