@@ -24,21 +24,21 @@ export default function GalleryPhoto({ photo, index, compact, onClick }: Gallery
     return (
         <div
             onClick={onClick}
-            className={`group relative aspect-[4/5] overflow-hidden rounded-3xl cursor-pointer ${compact
-                ? "transition-all duration-500 hover:scale-110 hover:z-50 hover:shadow-2xl opacity-80 hover:opacity-100"
+            className={`group relative aspect-[4/5] overflow-hidden rounded-xl cursor-pointer ${compact
+                ? "transition-all duration-300 hover:scale-105 hover:z-50 hover:shadow-2xl opacity-80 hover:opacity-100"
                 : ""
-                } ${isLoading ? "animate-pulse bg-white/10" : "bg-transparent"}`}
+                } ${isLoading ? "bg-white/5" : "bg-transparent"}`}
         >
             <Image
                 src={photo.src}
                 alt={photo.title}
                 fill
                 sizes={compact ? "(max-width: 768px) 50vw, 16vw" : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
-                className={`object-cover transition-all duration-700 ${compact ? "" : "group-hover:scale-110"
-                    } ${isLoading ? "scale-110 opacity-0" : "scale-100 opacity-100"}`}
+                className={`object-cover transition-all duration-500 ease-in-out ${compact ? "" : "md:group-hover:scale-105"
+                    } ${isLoading ? "scale-100 opacity-0" : "scale-100 opacity-100"}`}
                 onLoad={() => setIsLoading(false)}
                 priority={index < 2}
-                quality={50}
+                quality={40}
             />
 
             {/* Hover Overlay only (no text) - Hidden while loading */}
