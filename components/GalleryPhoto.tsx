@@ -28,7 +28,6 @@ export default function GalleryPhoto({ photo, index, compact, onClick }: Gallery
                 ? "transition-all duration-500 hover:scale-110 hover:z-50 hover:shadow-2xl opacity-80 hover:opacity-100"
                 : ""
                 } ${isLoading ? "animate-pulse bg-white/10" : "bg-transparent"}`}
-            style={{ contentVisibility: 'auto' }}
         >
             <Image
                 src={photo.src}
@@ -38,11 +37,8 @@ export default function GalleryPhoto({ photo, index, compact, onClick }: Gallery
                 className={`object-cover transition-all duration-700 ${compact ? "" : "group-hover:scale-110"
                     } ${isLoading ? "scale-110 opacity-0" : "scale-100 opacity-100"}`}
                 onLoad={() => setIsLoading(false)}
-                priority={index < 4}
+                priority={index < 2}
                 quality={50}
-                placeholder="blur"
-                // Light gray/white blur placeholder as requested
-                blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII="
             />
 
             {/* Hover Overlay only (no text) - Hidden while loading */}
