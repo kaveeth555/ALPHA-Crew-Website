@@ -46,6 +46,7 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid', i
     const [photos, setPhotos] = useState<Photo[]>(initialPhotos);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
     const [loading, setLoading] = useState(initialPhotos.length === 0);
     const [mounted, setMounted] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
@@ -60,8 +61,8 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid', i
 
     const fetchPhotos = async (pageNum: number) => {
         try {
-            setLoading(true);
-            setPhotos([]); // Explicitly clear photos to force DOM cleanup
+            if (pageNum === 1) setLoading(true);
+            else setLoadingMore(true);
 
             // If limit is provided (e.g. Home page), just fetch that many and no pagination
             const queryLimit = limit || 12;
@@ -79,10 +80,14 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid', i
                     id: index + 1
                 }));
 
-                if (shuffle) {
-                    setPhotos([...fetchedPhotos].sort(() => 0.5 - Math.random()));
+                if (pageNum === 1) {
+                    if (shuffle) {
+                        setPhotos([...fetchedPhotos].sort(() => 0.5 - Math.random()));
+                    } else {
+                        setPhotos(fetchedPhotos);
+                    }
                 } else {
-                    setPhotos(fetchedPhotos);
+                    setPhotos(prev => [...prev, ...fetchedPhotos]);
                 }
 
                 // If a hard limit is set (like on home page), we don't paginate
@@ -97,10 +102,7 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid', i
             console.error("Failed to fetch photos:", error);
         } finally {
             setLoading(false);
-            // Scroll to top of grid on mobile to make it obvious content changed
-            if (window.innerWidth < 768) {
-                window.scrollTo({ top: 0, behavior: 'auto' }); // Use auto for instant jump
-            }
+            setLoadingMore(false);
         }
     };
 
@@ -119,18 +121,10 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid', i
         return () => window.removeEventListener('resize', checkMobile);
     }, [limit, shuffle]);
 
-    const handleNextPage = () => {
+    const loadMore = () => {
         const nextPage = page + 1;
         setPage(nextPage);
         fetchPhotos(nextPage);
-    };
-
-    const handlePrevPage = () => {
-        if (page > 1) {
-            const prevPage = page - 1;
-            setPage(prevPage);
-            fetchPhotos(prevPage);
-        }
     };
 
     useEffect(() => {
@@ -161,7 +155,7 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid', i
         router.push(pathname, { scroll: false });
     };
 
-    if (loading) {
+    if (loading && page === 1) {
         return (
             <div className="flex flex-col items-center justify-center py-40 space-y-4">
                 <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
@@ -249,34 +243,28 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid', i
                     ))}
                 </div>
 
-                {/* Close space-y-12 div */}
+                {!compact && hasMore && (
+                    <div className="flex flex-col items-center pt-8 gap-4">
+                        <button
+                            onClick={loadMore}
+                            disabled={loadingMore}
+                            className="bg-white/10 border border-white/20 text-white px-8 py-3 rounded-full hover:bg-white/20 transition-all font-medium flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group active:scale-95"
+                        >
+                            {loadingMore ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin" />
+                                    <span>Loading...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <span>Load More</span>
+                                    <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                                </>
+                            )}
+                        </button>
+                    </div>
+                )}
             </div>
-
-            {!compact && (
-                <div className="flex justify-center items-center gap-6 pt-12 pb-20">
-                    <button
-                        onClick={handlePrevPage}
-                        disabled={page === 1 || loading}
-                        className="flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-white font-medium group"
-                    >
-                        <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-                        <span>Previous</span>
-                    </button>
-
-                    <span className="text-white/50 font-medium">
-                        Page {page}
-                    </span>
-
-                    <button
-                        onClick={handleNextPage}
-                        disabled={!hasMore || loading}
-                        className="flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-white font-medium group"
-                    >
-                        <span>Next</span>
-                        <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                    </button>
-                </div>
-            )}
 
             <Lightbox
                 isOpen={isLightboxOpen}

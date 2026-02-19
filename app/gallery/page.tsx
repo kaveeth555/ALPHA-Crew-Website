@@ -27,15 +27,10 @@ export default async function Gallery() {
 
     return (
         <main className="min-h-screen flex flex-col relative bg-black text-white">
-            <div className="fixed inset-0 z-0">
-                <Image
-                    src="/explore-background.jpg"
-                    alt="Background"
-                    fill
-                    className="object-cover opacity-50"
-                    quality={50}
-                    sizes="(max-width: 768px) 640px, 100vw"
-                />
+            <div
+                className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-50"
+                style={{ backgroundImage: "url('/explore-background.jpg')" }}
+            >
                 <div className="absolute inset-0 bg-gradient-to-b from-black via-black/40 to-black" />
             </div>
             <Header />
