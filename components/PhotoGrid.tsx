@@ -61,6 +61,7 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid', i
     const fetchPhotos = async (pageNum: number) => {
         try {
             setLoading(true);
+            setPhotos([]); // Explicitly clear photos to force DOM cleanup
 
             // If limit is provided (e.g. Home page), just fetch that many and no pagination
             const queryLimit = limit || 12;
@@ -98,7 +99,7 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid', i
             setLoading(false);
             // Scroll to top of grid on mobile to make it obvious content changed
             if (window.innerWidth < 768) {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                window.scrollTo({ top: 0, behavior: 'auto' }); // Use auto for instant jump
             }
         }
     };
@@ -160,7 +161,14 @@ export default function PhotoGrid({ limit, shuffle, compact, variant = 'grid', i
         router.push(pathname, { scroll: false });
     };
 
-    if (loading && page === 1) return <div className="text-white/40 text-center py-20">Loading photos...</div>;
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center py-40 space-y-4">
+                <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                <p className="text-white/40 text-sm font-medium">Loading gallery...</p>
+            </div>
+        );
+    }
 
     if (variant === 'swipe') {
         return (
