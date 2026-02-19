@@ -12,7 +12,7 @@ async function getGalleryPhotos() {
     await dbConnect();
     const photos = await Photo.find({})
         .sort({ order: 1, createdAt: -1 })
-        .limit(8) // Initial load limit reduced for mobile stability
+        .limit(6) // Reduced limit to prevent mobile crash on load more
         .lean();
 
     return photos.map((p: any) => ({
@@ -27,7 +27,7 @@ export default async function Gallery() {
 
     return (
         <main className="min-h-screen flex flex-col relative bg-black text-white">
-            <div className="fixed inset-0 z-0 hidden md:block">
+            <div className="fixed inset-0 z-0">
                 <Image
                     src="/explore-background.jpg"
                     alt="Background"
@@ -48,7 +48,7 @@ export default async function Gallery() {
                         </p>
                     </div>
                     <Suspense fallback={<GallerySkeleton />}>
-                        <PhotoGrid initialPhotos={initialPhotos} limit={8} />
+                        <PhotoGrid initialPhotos={initialPhotos} limit={6} />
                     </Suspense>
                 </div>
             </div>
